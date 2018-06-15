@@ -51,12 +51,12 @@ public class BrioalWebView extends RelativeLayout {
         LayoutParams webViewParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         addView(mWebView, webViewParams);
 
-        LayoutParams loadingParams = new LayoutParams(SizeUtil.DpToPx(mContext,100), SizeUtil.DpToPx(mContext,100));
+        LayoutParams loadingParams = new LayoutParams(SizeUtil.DpToPx(mContext, 100), SizeUtil.DpToPx(mContext, 100));
         loadingParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         mLoadingLayout.setBackgroundResource(R.drawable.bg_loading);
-        mLoadingLayout.addView(mLoadingView,new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
+        mLoadingLayout.addView(mLoadingView, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
-        addView(mLoadingLayout,loadingParams);
+        addView(mLoadingLayout, loadingParams);
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.setWebViewClient(new WebViewClient() {
 
@@ -70,6 +70,8 @@ public class BrioalWebView extends RelativeLayout {
             @Override
             public void onPageFinished(WebView view, String url) {
                 hideLoading();
+                System.out.println("6:" + (System.currentTimeMillis() - mCurrentTime));
+                mCurrentTime = System.currentTimeMillis();
                 isLoadDone = true;
                 super.onPageFinished(view, url);
 
@@ -79,6 +81,7 @@ public class BrioalWebView extends RelativeLayout {
     }
 
     private boolean isLoadDone = false;
+
     /**
      * 显示正在加载
      */
@@ -117,15 +120,22 @@ public class BrioalWebView extends RelativeLayout {
         showPageFromMD("", htmlContent);
     }
 
+    private long mCurrentTime = 0;
+
     /**
      * 传入MD的字符串,然后显示
      *
      * @param content
      */
     public void showPageFromMD(String title, String content) {
+        mCurrentTime = System.currentTimeMillis();
         showLoading();
+        System.out.println("1:" + (System.currentTimeMillis() - mCurrentTime));
+        mCurrentTime = System.currentTimeMillis();
         //读取网页的内容
         String htmlContent = AssetReadUtil.getStringFromAssert(mContext, "index.html");
+        System.out.println("2:" + (System.currentTimeMillis() - mCurrentTime));
+        mCurrentTime = System.currentTimeMillis();
         //是否显示标题
         if (StringUtil.isAvailable(title)) {
             //显示标题
@@ -135,6 +145,8 @@ public class BrioalWebView extends RelativeLayout {
         } else {
             htmlContent = htmlContent.replace("$title$", "");
         }
+        System.out.println("3:" + (System.currentTimeMillis() - mCurrentTime));
+        mCurrentTime = System.currentTimeMillis();
         //是否显示i内容
         if (StringUtil.isAvailable(content)) {
             //替换内容
@@ -142,6 +154,8 @@ public class BrioalWebView extends RelativeLayout {
         } else {
             htmlContent = htmlContent.replace("$content$", "");//替换内容
         }
+        System.out.println("4:" + (System.currentTimeMillis() - mCurrentTime));
+        mCurrentTime = System.currentTimeMillis();
         //显示内容
         mWebView.loadDataWithBaseURL("file:///android_asset/", htmlContent, "text/html", "utf-8", null);
     }
