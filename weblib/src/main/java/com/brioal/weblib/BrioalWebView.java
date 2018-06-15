@@ -2,10 +2,10 @@ package com.brioal.weblib;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.webkit.WebResourceRequest;
+import android.view.Gravity;
+import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
@@ -33,10 +33,17 @@ public class BrioalWebView extends RelativeLayout {
         init();
     }
 
+    private OnWebViewClickListener mClickListener;
+
+    public void setWebViewClickListener(OnWebViewClickListener clickListener) {
+        mClickListener = clickListener;
+    }
+
     public void setLoadDrawable(Drawable loadDrawable) {
         mLoadDrawable = loadDrawable;
         mLoadingView.setBackSrc(loadDrawable);
     }
+
 
     /**
      * WebView初始化
@@ -62,9 +69,12 @@ public class BrioalWebView extends RelativeLayout {
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                view.loadUrl(url);
-                showLoading();
-                return true;
+                System.out.println(url);
+                if (mClickListener != null) {
+                    mClickListener.onLoad(url);
+                    return true;
+                }
+                return false;
             }
 
             @Override
@@ -74,10 +84,32 @@ public class BrioalWebView extends RelativeLayout {
                 mCurrentTime = System.currentTimeMillis();
                 isLoadDone = true;
                 super.onPageFinished(view, url);
-
             }
         });
         setBackgroundColor(Color.WHITE);
+        // 设置长按事件
+        mWebView.setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                WebView.HitTestResult result = ((WebView)v).getHitTestResult();
+                if (null == result)
+                    return false;
+                int type = result.getType();
+                if (type == WebView.HitTestResult.UNKNOWN_TYPE)
+                    return false;
+                switch (type) {
+                    // 处理长按图片的菜单项
+                    case WebView.HitTestResult.IMAGE_TYPE:
+                        // 获取图片的路径
+                        String imgUrl = result.getExtra();
+                        if (mClickListener != null) {
+                            mClickListener.onClickPic(imgUrl);
+                        }
+                        break;
+                }
+                return true;
+            }
+        });
     }
 
     private boolean isLoadDone = false;
